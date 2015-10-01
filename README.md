@@ -1,2 +1,2 @@
 # cepapi
-Brazil CEP API
+Brazillian CEP API

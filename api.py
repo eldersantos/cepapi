@@ -48,7 +48,18 @@ def api_echo():
     elif request.method == 'DELETE':
         return "ECHO: DELETE"
 
+def app(environ, start_response):
+    data = 'CEP API\n'
+    status = '200 OK'
+    response_headers = [
+        ('Content-type','text/plain'),
+        ('Content-Length', str(len(data)))
+    ]
+    start_response(status, response_headers)
+    return iter([data])
 
+'''
 if __name__ == '__main__':
     app.run()
     #print(os.environ['APP_SETTINGS'])
+'''

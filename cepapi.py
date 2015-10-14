@@ -5,17 +5,20 @@ from flask import request, json, Response, jsonify
 from flask.ext.sqlalchemy import SQLAlchemy
 from sqlalchemy import *
 import os, re
+import unicodedata
+
 
 os.environ['DYLD_LIBRARY_PATH'] = '/Library/PostgreSQL/9.3/lib'
 
 app = Flask(__name__)
 app.config.from_object("config.DevelopmentConfig")
-db = SQLAlchemy(app)
+db = SQLAlchemy(app, use_native_unicode=True)
 
 class cep_log_index(db.Model):
 	id = db.Column(db.Integer, primary_key = True)
 	cep5 = db.Column(db.String(5))
 	uf = db.Column(db.String(2))
+
 
 	def __repr__(self):
 		return "cep:" + self.cep5
@@ -25,6 +28,7 @@ class uf(db.Model):
 	nome = db.Column(db.String(72))
 	cep1 = db.Column(db.Integer)
 	cep2 = db.Column(db.Integer)
+	ibge = db.Column(db.Integer)
 
 
 @app.route('/')
@@ -48,12 +52,13 @@ def api(cep):
 				if result.rowcount > 0:
 					for row in result:
 						data = {
-								'tipo' : row.tp_logradouro,
+								'tipo' : str(row.tp_logradouro).strip(),
 								'logradouro' : row.logradouro,
 								'bairro' : row.bairro,
-								'cidade' : row.cidade,
+								'cidade' : unicodedata.normalize('NFD', row.cidade).encode('ascii','ignore'),
 								'uf' : index.id.lower(),
-								'cep' : row.cep
+								'cep' : row.cep,
+								'ibge' : ''
 							}				
 					resp = jsonify(data)
 					resp.status_code = 200
@@ -87,6 +92,7 @@ def api_uf(param):
 		if index:
 			data = {
 				'uf' : index.id,
+				'ibge' : index.ibge,
 				'start' : index.cep1,
 				'finish' : index.cep2
 			}

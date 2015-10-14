@@ -1,3 +1,5 @@
+# -*- coding: utf-8 -*-
+
 from flask import Flask
 from flask import request, json, Response, jsonify
 from flask.ext.sqlalchemy import SQLAlchemy
@@ -21,8 +23,8 @@ class cep_log_index(db.Model):
 class uf(db.Model):
 	id = db.Column(db.String(2), primary_key = True)
 	nome = db.Column(db.String(72))
-	cep1 = db.Column(db.String(5))
-	cep2 = db.Column(db.String(5))
+	cep1 = db.Column(db.Integer)
+	cep2 = db.Column(db.Integer)
 
 
 @app.route('/')
@@ -36,10 +38,35 @@ def api(cep):
 	if cep:
 		cepStr = str(cep)
 		validCep = re.compile('^\d{5}-\d{3}$')
-		#return cep
+
 		if validCep.match(cep):
-			#index = cep_log_index.query.filter_by(=uf)
-			return cepStr
+			intCep = int(cepStr[0:5])
+			index = uf.query.filter(and_(intCep >= uf.cep1, intCep <= uf.cep2)).first()
+			if index:
+				sql = "SELECT * FROM " + index.id.lower() + " WHERE cep = '" + cepStr + "' limit 1"
+				result = db.engine.execute(sql)
+				if result.rowcount > 0:
+					for row in result:
+						data = {
+								'tipo' : row.tp_logradouro,
+								'logradouro' : row.logradouro,
+								'bairro' : row.bairro,
+								'cidade' : row.cidade,
+								'uf' : index.id.lower(),
+								'cep' : row.cep
+							}				
+					resp = jsonify(data)
+					resp.status_code = 200
+					return resp
+				else:
+					return "CEP NotFound"
+			else:
+				data = {
+					'NotFound'
+				}
+				resp = jsonify(data)
+				resp.status_code = 404
+				return resp
 		else:
 			data = {
 				'Error' : 'Format invalid, should be a string like XXXXX-XXX where X is a number from 0 to 9'

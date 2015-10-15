@@ -6,7 +6,7 @@ class Config(object):
     CSRF_ENABLED = True
     SECRET_KEY = 'this-really-needs-to-be-changed'
     #SQLALCHEMY_DATABASE_URI = os.environ['DATABASE_URL']
-    SQLALCHEMY_DATABASE_URI = "postgresql://localhost/cepapi"
+    SQLALCHEMY_DATABASE_URI = "postgresql://rsmabxsmadkmfb:NvTkUpipyewdw_287GUdX-lRXw@ec2-54-225-201-25.compute-1.amazonaws.com/d3dciho89gc7k7"
 
 
 class ProductionConfig(Config):

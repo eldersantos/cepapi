@@ -1,12 +1,8 @@
-# -*- coding: utf-8 -*-
-
 from flask import Flask
 from flask import request, json, Response, jsonify
 from flask.ext.sqlalchemy import SQLAlchemy
 from sqlalchemy import *
 import os, re
-import unicodedata
-
 
 os.environ['DYLD_LIBRARY_PATH'] = '/Library/PostgreSQL/9.3/lib'
 
@@ -55,14 +51,12 @@ def api(cep):
 								'tipo' : str(row.tp_logradouro).strip(),
 								'logradouro' : row.logradouro,
 								'bairro' : row.bairro,
-								'cidade' : unicodedata.normalize('NFD', row.cidade).encode('ascii','ignore'),
+								'cidade' : row.cidade,
 								'uf' : index.id.lower(),
 								'cep' : row.cep,
 								'ibge' : ''
-							}				
-					resp = jsonify(data)
-					resp.status_code = 200
-					return resp
+							}
+					return json.dumps(data, ensure_ascii=False, indent=4, sort_keys=True)
 				else:
 					return "CEP NotFound"
 			else:
